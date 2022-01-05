@@ -37,12 +37,12 @@ func NewClient(ctx context.Context, rc *RunConfig) (*Client, error) {
   }
   return &Client{
     autoscalingClient: autoscaling.New(autoscaling.Options{
-      Region:      awsConfig.Region,
       Credentials: awsConfig.Credentials,
+      Region:      awsConfig.Region,
     }),
     ec2Client: ec2.New(ec2.Options{
-      Region:      awsConfig.Region,
       Credentials: awsConfig.Credentials,
+      Region:      awsConfig.Region,
     }),
     elbClient: elasticloadbalancingv2.New(elasticloadbalancingv2.Options{
       Credentials: awsConfig.Credentials,
