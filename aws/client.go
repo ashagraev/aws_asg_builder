@@ -5,6 +5,8 @@ import (
   "fmt"
   "github.com/aws/aws-sdk-go-v2/config"
   "github.com/aws/aws-sdk-go-v2/service/autoscaling"
+  "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+
   "github.com/aws/aws-sdk-go-v2/service/ec2"
   "time"
 )
@@ -23,6 +25,7 @@ type RunConfig struct {
 type Client struct {
   autoscalingClient *autoscaling.Client
   ec2Client         *ec2.Client
+  elbClient         *elasticloadbalancingv2.Client
   rc                *RunConfig
   ctx               context.Context
 }
@@ -40,6 +43,10 @@ func NewClient(ctx context.Context, rc *RunConfig) (*Client, error) {
     ec2Client: ec2.New(ec2.Options{
       Region:      awsConfig.Region,
       Credentials: awsConfig.Credentials,
+    }),
+    elbClient: elasticloadbalancingv2.New(elasticloadbalancingv2.Options{
+      Credentials: awsConfig.Credentials,
+      Region:      awsConfig.Region,
     }),
     rc:  rc,
     ctx: ctx,
