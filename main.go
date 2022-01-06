@@ -9,14 +9,14 @@ import (
 )
 
 func initRunConfig() *aws.RunConfig {
-  groupName := flag.String("group", "", "the name of the Auto Scaling group to update; required")
-  instanceID := flag.String("instance", "", "AWS EC2 instance ID to create the AMI from; optional: do not use if you already have an AMI ID. The created launch template will inherit most of the options from this instance, including kernel id, network interfaces, placement, license specifications, and more.")
-  healthPath := flag.String("health-path", "/health", "the daemon's health check path for the ELB balancers")
-  daemonPort := flag.Int("port", 80, "the daemon's traffic port for the ELB balancers")
+  groupName := flag.String("group", "", "the name of the Auto Scaling group to create; required.")
+  instanceID := flag.String("instance", "", "AWS EC2 instance ID to create the service from; required.")
+  healthPath := flag.String("health-path", "/health", "the health HTTP handler for the service.")
+  daemonPort := flag.Int("port", 80, "the HTTP traffic port for the service.")
   instancesCount := flag.Int("instances", 1, "the number of instances to create within the group; min instances count and desired instances count will be set up to this value, max instances count will be set up to twice this value.")
-  healthCheckGracePeriodStr := flag.String("health-check-grace-period", "1m", "the time needed for the instance to become healthy after the launch.")
-  updateTimeoutStr := flag.String("update-timeout", "30m", "the time limit to complete the instance refresh; optional: the default is 30 minutes. Use the Golang duration strings to override, see https://pkg.go.dev/time#ParseDuration.")
-  updateTickStr := flag.String("update-tick", "1m", "the time between status updates in the log file; optional: the default is one minute. Making this parameter lower might speed up the overall execution. Use the Golang duration strings to override, see https://pkg.go.dev/time#ParseDuration.")
+  healthCheckGracePeriodStr := flag.String("health-check-grace-period", "1m", "the time needed for the instance to become healthy after the launch. Use the Golang duration strings to override, see https://pkg.go.dev/time#ParseDuration.")
+  updateTimeoutStr := flag.String("update-timeout", "30m", "the time limit to complete the instance refresh; optional, default: 30m. Use the Golang duration strings to override, see https://pkg.go.dev/time#ParseDuration.")
+  updateTickStr := flag.String("update-tick", "1m", "the time between status updates in the log file; optional, default: 1m. Making this parameter lower might speed up the overall execution. Use the Golang duration strings to override, see https://pkg.go.dev/time#ParseDuration.")
   flag.Parse()
 
   updateTimeout, err := time.ParseDuration(*updateTimeoutStr)
