@@ -63,8 +63,7 @@ https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-capacity-
 
 ## Examples of Use
 
-The program options to create a new AMI from the instance `i-0d8767eed40de1728`, name it `service_ami`,
-update the Auto Scaling group `my_service_group` with it:
+The following command will create an Auto Scaling group `my_service_group` from an instance `i-0699803d818227e16`:
 
 `aws_asg_builder --instance i-0699803d818227e16 --group my_service_group --port 8080 --instances 10`
 
