@@ -66,6 +66,15 @@ func (c *Client) CreateAutoScalingGroup(launchTemplateID string, instanceData *e
     if numHealthy >= c.rc.InstancesCount {
       log.Printf("successfully created an auto scaling group %q", c.rc.GroupName)
       log.Printf("check out the health status: http://%s:%d%s", *loadBalancer.DNSName, c.rc.DaemonPort, c.rc.HealthPath)
+      _, err := c.autoscalingClient.EnableMetricsCollection(c.ctx, &autoscaling.EnableMetricsCollectionInput{
+        AutoScalingGroupName: aws.String(c.rc.GroupName),
+        Granularity:          aws.String("1Minute"),
+      })
+      if err != nil {
+        log.Printf("cannot enable metrics collection for the group %q, consider adding them in the console manually", c.rc.GroupName)
+        return nil
+      }
+      log.Printf("enabled metrics collection for the group %q", c.rc.GroupName)
       return nil
     }
     time.Sleep(c.rc.UpdateTick)
