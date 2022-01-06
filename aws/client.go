@@ -15,7 +15,7 @@ type RunConfig struct {
   InstanceID             string
   GroupName              string
   HealthPath             string
-  DaemonPort             int
+  DaemonPort             int32
   InstancesCount         int32
   HealthCheckGracePeriod time.Duration
   UpdateTimeout          time.Duration
