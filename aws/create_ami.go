@@ -36,19 +36,20 @@ func (c *Client) CreateAMI() (string, error) {
   }
   finishTime := time.Now().Add(c.rc.UpdateTimeout)
   for time.Now().Before(finishTime) {
-    time.Sleep(c.rc.UpdateTick)
     imageState, err := c.getImageState(*createImageOutput.ImageId)
     if err != nil {
       log.Printf("cannot get image state: %v", err)
+      time.Sleep(c.rc.UpdateTick)
       continue
     }
-    log.Printf("creating image %s (%s): %s", amiName, *createImageOutput.ImageId, imageState)
+    log.Printf("%s (%q): %s", *createImageOutput.ImageId, amiName, imageState)
     if imageState != types.ImageStatePending {
       if imageState == types.ImageStateAvailable {
         return *createImageOutput.ImageId, nil
       }
-      return "", fmt.Errorf("created image %s (%s) is in invalid state %s", amiName, *createImageOutput.ImageId, imageState)
+      return "", fmt.Errorf("created image %s (%q) is in invalid state %s", *createImageOutput.ImageId, amiName, imageState)
     }
+    time.Sleep(c.rc.UpdateTick)
   }
-  return "", fmt.Errorf("the image %s (%s) didn't become available in %v", amiName, *createImageOutput.ImageId, c.rc.UpdateTimeout)
+  return "", fmt.Errorf("the image %s (%q) didn't become available in %v", *createImageOutput.ImageId, amiName, c.rc.UpdateTimeout)
 }
