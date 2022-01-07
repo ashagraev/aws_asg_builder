@@ -10,7 +10,7 @@ import (
   "time"
 )
 
-func (c *Client) CreateAutoScalingGroup(launchTemplateID string, targetGroupARN string, subnetIDs []string) error {
+func (c *Client) CreateAutoScalingGroup(subnetIDs []string) error {
   _, err := c.autoscalingClient.CreateAutoScalingGroup(c.ctx, &autoscaling.CreateAutoScalingGroupInput{
     AutoScalingGroupName:   aws.String(c.rc.GetGroupName()),
     MaxSize:                aws.Int32(2 * c.rc.InstancesCount),
@@ -20,9 +20,9 @@ func (c *Client) CreateAutoScalingGroup(launchTemplateID string, targetGroupARN 
     HealthCheckGracePeriod: aws.Int32(int32(c.rc.HealthCheckGracePeriod.Seconds())),
     HealthCheckType:        aws.String("ELB"),
     LaunchTemplate: &types.LaunchTemplateSpecification{
-      LaunchTemplateId: aws.String(launchTemplateID),
+      LaunchTemplateId: aws.String(c.launchTemplateID),
     },
-    TargetGroupARNs:   []string{targetGroupARN},
+    TargetGroupARNs:   []string{c.targetGroupARN},
     VPCZoneIdentifier: aws.String(strings.Join(subnetIDs, ",")),
   })
   if err != nil {

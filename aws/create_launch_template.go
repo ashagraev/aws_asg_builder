@@ -55,18 +55,19 @@ func (c *Client) generateLaunchTemplateData(amiID string, instanceData *types.In
   }, nil
 }
 
-func (c *Client) CreateLaunchTemplate(amiID string, instanceData *types.Instance) (string, error) {
-  launchTemplateData, err := c.generateLaunchTemplateData(amiID, instanceData)
+func (c *Client) CreateLaunchTemplate(instanceData *types.Instance) error {
+  launchTemplateData, err := c.generateLaunchTemplateData(c.amiID, instanceData)
   if err != nil {
-    return "", fmt.Errorf("cannot generate launch template data from ami %s: %v", amiID, err)
+    return fmt.Errorf("cannot generate launch template data from ami %s: %v", c.amiID, err)
   }
   res, err := c.ec2Client.CreateLaunchTemplate(c.ctx, &ec2.CreateLaunchTemplateInput{
     LaunchTemplateData: launchTemplateData,
     LaunchTemplateName: aws.String(c.rc.GetLaunchTemplateName()),
   })
   if err != nil {
-    return "", fmt.Errorf("cannot create launch template from ami %s: %v", amiID, err)
+    return fmt.Errorf("cannot create launch template from ami %s: %v", c.amiID, err)
   }
   log.Printf("created launch template %q", c.rc.GroupName)
-  return *res.LaunchTemplate.LaunchTemplateId, nil
+  c.launchTemplateID = *res.LaunchTemplate.LaunchTemplateId
+  return nil
 }

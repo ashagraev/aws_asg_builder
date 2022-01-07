@@ -6,6 +6,7 @@ import (
   "github.com/aws/aws-sdk-go-v2/config"
   "github.com/aws/aws-sdk-go-v2/service/autoscaling"
   "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+  "log"
   "regexp"
   "strings"
 
@@ -76,12 +77,16 @@ func (c *RunConfig) ValidateArtifactNames() error {
 }
 
 type Client struct {
-  autoscalingClient *autoscaling.Client
-  ec2Client         *ec2.Client
-  elbClient         *elasticloadbalancingv2.Client
-  rc                *RunConfig
-  ctx               context.Context
-  region            string
+  amiID               string
+  launchTemplateID    string
+  targetGroupARN      string
+  loadBalancerDNSName string
+  autoscalingClient   *autoscaling.Client
+  ec2Client           *ec2.Client
+  elbClient           *elasticloadbalancingv2.Client
+  rc                  *RunConfig
+  ctx                 context.Context
+  region              string
 }
 
 func NewClient(ctx context.Context, rc *RunConfig) (*Client, error) {
@@ -126,4 +131,13 @@ func (c *Client) GetLoadBalancerLink() string {
 
 func (c *Client) GetAutoScalingGroupLink() string {
   return fmt.Sprintf("https://console.aws.amazon.com/ec2autoscaling/home?region=%s#/details/%s", c.region, c.rc.GetGroupName())
+}
+
+func (c *Client) ReportCreatedArtifacts() {
+  log.Printf("AMI link: %s", c.GetAMILink(c.amiID))
+  log.Printf("Launch template link: %s", c.GetLaunchTemplateLink(c.launchTemplateID))
+  log.Printf("Target group link: %s", c.GetTargetGroupLink(c.targetGroupARN))
+  log.Printf("Balancer link: %s", c.GetLoadBalancerLink())
+  log.Printf("Auto Scalingr group link: %s", c.GetAutoScalingGroupLink())
+  log.Printf("check out the health status: http://%s:%d%s", c.loadBalancerDNSName, c.rc.DaemonPort, c.rc.HealthPath)
 }

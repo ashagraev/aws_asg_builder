@@ -72,29 +72,20 @@ func main() {
   log.Printf("will create a target group %q in VPC %s", rc.GetTargetGroupName(), defaultVPCID)
   log.Printf("will create a load balancer %q in subnets %s", rc.GetBalancerName(), strings.Join(subnetIDs, ", "))
   log.Printf("will create an auto scaling group %q with %d %s spot instances", rc.GetGroupName(), rc.InstancesCount, instanceData.InstanceType)
-  amiID, err := client.CreateAMI()
-  if err != nil {
+  if err := client.CreateAMI(); err != nil {
     log.Fatalln(err)
   }
-  launchTemplateID, err := client.CreateLaunchTemplate(amiID, instanceData)
-  if err != nil {
+  if err := client.CreateLaunchTemplate(instanceData); err != nil {
     log.Fatalln(err)
   }
-  targetGroupARN, err := client.CreateTargetGroup(instanceData)
-  if err != nil {
+  if err := client.CreateTargetGroup(instanceData); err != nil {
     log.Fatalln(err)
   }
-  loadBalancerDNSName, err := client.CreateLoadBalancer(targetGroupARN, subnetIDs)
-  if err != nil {
+  if err := client.CreateLoadBalancer(subnetIDs); err != nil {
     log.Fatalln(err)
   }
-  if err := client.CreateAutoScalingGroup(launchTemplateID, targetGroupARN, subnetIDs); err != nil {
+  if err := client.CreateAutoScalingGroup(subnetIDs); err != nil {
     log.Fatalln(err)
   }
-  log.Printf("AMI link: %s", client.GetAMILink(amiID))
-  log.Printf("Launch template link: %s", client.GetLaunchTemplateLink(launchTemplateID))
-  log.Printf("Target group link: %s", client.GetTargetGroupLink(targetGroupARN))
-  log.Printf("Balancer link: %s", client.GetLoadBalancerLink())
-  log.Printf("Auto Scalingr group link: %s", client.GetAutoScalingGroupLink())
-  log.Printf("check out the health status: http://%s:%d%s", loadBalancerDNSName, rc.DaemonPort, rc.HealthPath)
+  client.ReportCreatedArtifacts()
 }

@@ -12,7 +12,7 @@ import (
   "time"
 )
 
-func (c *Client) CreateTargetGroup(instanceDescription *ec2types.Instance) (string, error) {
+func (c *Client) CreateTargetGroup(instanceDescription *ec2types.Instance) error {
   targetGroupName := strings.ReplaceAll(c.rc.GroupName, "_", "-")
   res, err := c.elbClient.CreateTargetGroup(c.ctx, &elasticloadbalancingv2.CreateTargetGroupInput{
     Name:               aws.String(c.rc.GetTargetGroupName()),
@@ -24,13 +24,14 @@ func (c *Client) CreateTargetGroup(instanceDescription *ec2types.Instance) (stri
     Port:               aws.Int32(c.rc.DaemonPort),
   })
   if err != nil {
-    return "", fmt.Errorf("cannot register the target group %q: %v", targetGroupName, err)
+    return fmt.Errorf("cannot register the target group %q: %v", targetGroupName, err)
   }
   if len(res.TargetGroups) != 1 {
-    return "", fmt.Errorf("created wrong %d != 1 number of target groups with name %q", len(res.TargetGroups), targetGroupName)
+    return fmt.Errorf("created wrong %d != 1 number of target groups with name %q", len(res.TargetGroups), targetGroupName)
   }
   log.Printf("created target group %q (%s)", targetGroupName, *res.TargetGroups[0].TargetGroupArn)
-  return *res.TargetGroups[0].TargetGroupArn, nil
+  c.targetGroupARN = *res.TargetGroups[0].TargetGroupArn
+  return nil
 }
 
 func (c *Client) GetDefaultVPCID() (string, error) {
@@ -79,7 +80,7 @@ func (c *Client) GetSubnets(defaultVPCID string) ([]string, error) {
   return subnetIDs, nil
 }
 
-func (c *Client) CreateLoadBalancer(targetGroupArn string, subnetIDs []string) (string, error) {
+func (c *Client) CreateLoadBalancer(subnetIDs []string) error {
   balancerName := strings.ReplaceAll(c.rc.GroupName, "_", "-")
   createLoadBalancerRes, err := c.elbClient.CreateLoadBalancer(c.ctx, &elasticloadbalancingv2.CreateLoadBalancerInput{
     Name:    aws.String(c.rc.GetBalancerName()),
@@ -88,10 +89,10 @@ func (c *Client) CreateLoadBalancer(targetGroupArn string, subnetIDs []string) (
     Subnets: subnetIDs,
   })
   if err != nil {
-    return "", fmt.Errorf("cannot create an elastic load balancer %q: %v", balancerName, err)
+    return fmt.Errorf("cannot create an elastic load balancer %q: %v", balancerName, err)
   }
   if len(createLoadBalancerRes.LoadBalancers) != 1 {
-    return "", fmt.Errorf("created wrong %d != 1 number of load balancers with name %q", len(createLoadBalancerRes.LoadBalancers), balancerName)
+    return fmt.Errorf("created wrong %d != 1 number of load balancers with name %q", len(createLoadBalancerRes.LoadBalancers), balancerName)
   }
   finishTime := time.Now().Add(c.rc.UpdateTimeout)
   for time.Now().Before(finishTime) {
@@ -104,13 +105,13 @@ func (c *Client) CreateLoadBalancer(targetGroupArn string, subnetIDs []string) (
       continue
     }
     if len(describeLoadBalancersRes.LoadBalancers) != 1 {
-      return "", fmt.Errorf("received wrong %d != 1 number of load balancers with arn %s", len(describeLoadBalancersRes.LoadBalancers), *createLoadBalancerRes.LoadBalancers[0].LoadBalancerArn)
+      return fmt.Errorf("received wrong %d != 1 number of load balancers with arn %s", len(describeLoadBalancersRes.LoadBalancers), *createLoadBalancerRes.LoadBalancers[0].LoadBalancerArn)
     }
     state := describeLoadBalancersRes.LoadBalancers[0].State.Code
     log.Printf("load balancer %q: %s", balancerName, state)
     if state != types.LoadBalancerStateEnumProvisioning {
       if state != types.LoadBalancerStateEnumActive {
-        return "", fmt.Errorf("load balancer ended up not in an active status %q", state)
+        return fmt.Errorf("load balancer ended up not in an active status %q", state)
       }
       _, err := c.elbClient.CreateListener(c.ctx, &elasticloadbalancingv2.CreateListenerInput{
         DefaultActions: []types.Action{
@@ -119,7 +120,7 @@ func (c *Client) CreateLoadBalancer(targetGroupArn string, subnetIDs []string) (
             ForwardConfig: &types.ForwardActionConfig{
               TargetGroups: []types.TargetGroupTuple{
                 {
-                  TargetGroupArn: aws.String(targetGroupArn),
+                  TargetGroupArn: aws.String(c.targetGroupARN),
                   Weight:         aws.Int32(1),
                 },
               },
@@ -131,11 +132,12 @@ func (c *Client) CreateLoadBalancer(targetGroupArn string, subnetIDs []string) (
         Protocol:        types.ProtocolEnumHttp,
       })
       if err != nil {
-        return "", fmt.Errorf("cannot crate listener for the load balancer %q: %v", balancerName, err)
+        return fmt.Errorf("cannot crate listener for the load balancer %q: %v", balancerName, err)
       }
-      return *describeLoadBalancersRes.LoadBalancers[0].DNSName, nil
+      c.loadBalancerDNSName = *describeLoadBalancersRes.LoadBalancers[0].DNSName
+      return nil
     }
     time.Sleep(c.rc.UpdateTick)
   }
-  return "", fmt.Errorf("the balancer %q has not become ready within the timeout %v", balancerName, c.rc.UpdateTimeout)
+  return fmt.Errorf("the balancer %q has not become ready within the timeout %v", balancerName, c.rc.UpdateTimeout)
 }
