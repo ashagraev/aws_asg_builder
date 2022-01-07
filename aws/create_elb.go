@@ -33,7 +33,30 @@ func (c *Client) CreateTargetGroup(instanceDescription *ec2types.Instance) (stri
   return *res.TargetGroups[0].TargetGroupArn, nil
 }
 
-func (c *Client) GetSubnets() ([]string, error) {
+func (c *Client) GetDefaultVPCID() (string, error) {
+  var nextToken *string
+  for {
+    vpcRes, err := c.ec2Client.DescribeVpcs(c.ctx, &ec2.DescribeVpcsInput{NextToken: nextToken})
+    if err != nil {
+      return "", fmt.Errorf("cannot describe VPCs: %v", err)
+    }
+    for _, vpc := range vpcRes.Vpcs {
+      if *vpc.IsDefault && vpc.State != ec2types.VpcStateAvailable {
+        return "", fmt.Errorf("the default VPC %s is not in the available state %q", *vpc.VpcId, vpc.State)
+      }
+      if *vpc.IsDefault {
+        return *vpc.VpcId, nil
+      }
+    }
+    nextToken = vpcRes.NextToken
+    if nextToken == nil {
+      break
+    }
+  }
+  return "", nil
+}
+
+func (c *Client) GetSubnets(defaultVPCID string) ([]string, error) {
   var nextToken *string
   var subnetIDs []string
   for {
@@ -44,8 +67,7 @@ func (c *Client) GetSubnets() ([]string, error) {
       return nil, fmt.Errorf("cannot read the list of subnets: %v", err)
     }
     for _, s := range subnets.Subnets {
-      // TODO: better subnets exploration method.
-      if *s.DefaultForAz {
+      if *s.VpcId == defaultVPCID && *s.DefaultForAz {
         subnetIDs = append(subnetIDs, *s.SubnetId)
       }
     }

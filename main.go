@@ -59,10 +59,18 @@ func main() {
   if err != nil {
     log.Fatalln(err)
   }
+  defaultVPCID, err := client.GetDefaultVPCID()
+  if err != nil {
+    log.Fatalln(err)
+  }
+  subnetIDs, err := client.GetSubnets(defaultVPCID)
+  if err != nil {
+    log.Fatalln(err)
+  }
   log.Printf("will create an AMI %q from the instance %s", rc.GetAMIName(), rc.InstanceID)
   log.Printf("will create a launch template %q", rc.GetLaunchTemplateName())
-  log.Printf("will create a target group %q", rc.GetTargetGroupName())
-  log.Printf("will create a load balancer %q", rc.GetBalancerName())
+  log.Printf("will create a target group %q in VPC %s", rc.GetTargetGroupName(), defaultVPCID)
+  log.Printf("will create a load balancer %q in subnets %s", rc.GetBalancerName(), strings.Join(subnetIDs, ", "))
   log.Printf("will create an auto scaling group %q with %d %s spot instances", rc.GetGroupName(), rc.InstancesCount, instanceData.InstanceType)
   amiID, err := client.CreateAMI()
   if err != nil {
@@ -76,11 +84,6 @@ func main() {
   if err != nil {
     log.Fatalln(err)
   }
-  subnetIDs, err := client.GetSubnets()
-  if err != nil {
-    log.Fatalln(err)
-  }
-  log.Printf("load balancer subnets: %s", strings.Join(subnetIDs, ", "))
   loadBalancer, err := client.CreateLoadBalancer(targetGroupARN, subnetIDs)
   if err != nil {
     log.Fatalln(err)
