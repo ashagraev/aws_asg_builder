@@ -72,8 +72,8 @@ The output looks like that then:
 ```
 2022/01/07 10:42:01 will create an AMI "my_service_group v1" from the instance i-0699803d818227e16
 2022/01/07 10:42:01 will create a launch template "my_service_group"
-2022/01/07 10:42:01 will create a target group "my-service-group"
-2022/01/07 10:42:01 will create a load balancer "my-service-group"
+2022/01/07 10:42:01 will create a target group "my-service-group" in VPC vpc-c832bdb5
+2022/01/07 10:42:01 will create a load balancer "my-service-group" in subnets subnet-7e353733, subnet-bb0d39b5, subnet-6bafd034, subnet-6b7c0e0d, subnet-66ca4b57, subnet-dd8ef7fc
 2022/01/07 10:42:01 will create an auto scaling group "my_service_group" with 10 t2.small spot instances
 2022/01/07 10:42:01 ami-00c78efe33a162b36 ("my_service_group v1"): pending
 2022/01/07 10:43:02 ami-00c78efe33a162b36 ("my_service_group v1"): pending
@@ -81,7 +81,6 @@ The output looks like that then:
 2022/01/07 10:45:02 ami-00c78efe33a162b36 ("my_service_group v1"): available
 2022/01/07 10:45:02 created launch template "my_service_group"
 2022/01/07 10:45:03 created target group "my-service-group" (arn:aws:elasticloadbalancing:us-east-1:046898261394:targetgroup/my-service-group/9ff35ebad2a86a0d)
-2022/01/07 10:45:04 load balancer subnets: subnet-7e353733, subnet-bb0d39b5, subnet-6bafd034, subnet-6b7c0e0d, subnet-66ca4b57, subnet-dd8ef7fc
 2022/01/07 10:45:05 load balancer "my-service-group": provisioning
 2022/01/07 10:46:05 load balancer "my-service-group": provisioning
 2022/01/07 10:47:05 load balancer "my-service-group": active
