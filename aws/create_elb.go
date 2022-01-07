@@ -15,7 +15,7 @@ import (
 func (c *Client) CreateTargetGroup(instanceDescription *ec2types.Instance) (string, error) {
   targetGroupName := strings.ReplaceAll(c.rc.GroupName, "_", "-")
   res, err := c.elbClient.CreateTargetGroup(c.ctx, &elasticloadbalancingv2.CreateTargetGroupInput{
-    Name:               aws.String(targetGroupName),
+    Name:               aws.String(c.rc.GetTargetGroupName()),
     HealthCheckEnabled: aws.Bool(true),
     HealthCheckPath:    aws.String(c.rc.HealthPath),
     HealthCheckPort:    aws.String(fmt.Sprintf("%d", c.rc.DaemonPort)),
@@ -60,7 +60,7 @@ func (c *Client) GetSubnets() ([]string, error) {
 func (c *Client) CreateLoadBalancer(targetGroupArn string, subnetIDs []string) (*types.LoadBalancer, error) {
   balancerName := strings.ReplaceAll(c.rc.GroupName, "_", "-")
   createLoadBalancerRes, err := c.elbClient.CreateLoadBalancer(c.ctx, &elasticloadbalancingv2.CreateLoadBalancerInput{
-    Name:    aws.String(balancerName),
+    Name:    aws.String(c.rc.GetBalancerName()),
     Scheme:  types.LoadBalancerSchemeEnumInternetFacing,
     Type:    types.LoadBalancerTypeEnumApplication,
     Subnets: subnetIDs,

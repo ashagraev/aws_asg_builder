@@ -28,7 +28,7 @@ func (c *Client) CreateAMI() (string, error) {
   amiName := c.rc.GroupName + " v1"
   createImageOutput, err := c.ec2Client.CreateImage(c.ctx, &ec2.CreateImageInput{
     InstanceId: aws.String(c.rc.InstanceID),
-    Name:       aws.String(amiName),
+    Name:       aws.String(c.rc.GetAMIName()),
     NoReboot:   aws.Bool(false),
   })
   if err != nil {

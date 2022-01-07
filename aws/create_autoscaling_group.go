@@ -26,7 +26,7 @@ func (c *Client) CreateAutoScalingGroup(launchTemplateID string, instanceData *e
     return fmt.Errorf("cannot create a balancer: %v", err)
   }
   _, err = c.autoscalingClient.CreateAutoScalingGroup(c.ctx, &autoscaling.CreateAutoScalingGroupInput{
-    AutoScalingGroupName:   aws.String(c.rc.GroupName),
+    AutoScalingGroupName:   aws.String(c.rc.GetGroupName()),
     MaxSize:                aws.Int32(2 * c.rc.InstancesCount),
     MinSize:                aws.Int32(c.rc.InstancesCount),
     CapacityRebalance:      aws.Bool(true),

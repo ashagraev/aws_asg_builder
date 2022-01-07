@@ -62,7 +62,7 @@ func (c *Client) CreateLaunchTemplate(amiID string, instanceData *types.Instance
   }
   res, err := c.ec2Client.CreateLaunchTemplate(c.ctx, &ec2.CreateLaunchTemplateInput{
     LaunchTemplateData: launchTemplateData,
-    LaunchTemplateName: aws.String(c.rc.GroupName),
+    LaunchTemplateName: aws.String(c.rc.GetLaunchTemplateName()),
   })
   if err != nil {
     return "", fmt.Errorf("cannot create launch template from ami %s: %v", amiID, err)
