@@ -3,6 +3,7 @@ package aws
 import (
   "context"
   "fmt"
+  "github.com/aws/aws-sdk-go-v2/aws"
   "github.com/aws/aws-sdk-go-v2/config"
   "github.com/aws/aws-sdk-go-v2/service/autoscaling"
   "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
@@ -77,16 +78,20 @@ func (c *RunConfig) ValidateArtifactNames() error {
 }
 
 type Client struct {
-  amiID               string
-  launchTemplateID    string
-  targetGroupARN      string
-  loadBalancerDNSName string
-  autoscalingClient   *autoscaling.Client
-  ec2Client           *ec2.Client
-  elbClient           *elasticloadbalancingv2.Client
-  rc                  *RunConfig
-  ctx                 context.Context
-  region              string
+  amiID                           string
+  launchTemplateID                string
+  targetGroupARN                  string
+  loadBalancerName                string
+  loadBalancerDNSName             string
+  loadBalancerARN                 string
+  autoScalingGroupCreationStarted bool
+
+  autoscalingClient *autoscaling.Client
+  ec2Client         *ec2.Client
+  elbClient         *elasticloadbalancingv2.Client
+  rc                *RunConfig
+  ctx               context.Context
+  region            string
 }
 
 func NewClient(ctx context.Context, rc *RunConfig) (*Client, error) {
@@ -140,4 +145,62 @@ func (c *Client) ReportCreatedArtifacts() {
   log.Printf("Balancer link: %s", c.GetLoadBalancerLink())
   log.Printf("Auto Scalingr group link: %s", c.GetAutoScalingGroupLink())
   log.Printf("check out the health status: http://%s:%d%s", c.loadBalancerDNSName, c.rc.DaemonPort, c.rc.HealthPath)
+}
+
+func (c *Client) Cleanup() {
+  var errorMessages []string
+  if c.amiID != "" {
+    _, err := c.ec2Client.DeregisterImage(c.ctx, &ec2.DeregisterImageInput{
+      ImageId: aws.String(c.amiID),
+    })
+    if err != nil {
+      errorMessages = append(errorMessages, fmt.Sprintf("cannot deregister %q: %v", c.amiID, err))
+    } else {
+      log.Printf("deregistered %q", c.amiID)
+    }
+  }
+  if c.launchTemplateID != "" {
+    _, err := c.ec2Client.DeleteLaunchTemplate(c.ctx, &ec2.DeleteLaunchTemplateInput{
+      LaunchTemplateId: aws.String(c.launchTemplateID),
+    })
+    if err != nil {
+      errorMessages = append(errorMessages, fmt.Sprintf("cannot delete launch template %q: %v", c.launchTemplateID, err))
+    } else {
+      log.Printf("deleted launch template %q", c.launchTemplateID)
+    }
+  }
+  if c.targetGroupARN != "" {
+    _, err := c.elbClient.DeleteTargetGroup(c.ctx, &elasticloadbalancingv2.DeleteTargetGroupInput{
+      TargetGroupArn: aws.String(c.targetGroupARN),
+    })
+    if err != nil {
+      errorMessages = append(errorMessages, fmt.Sprintf("cannot delete target group %q: %v", c.targetGroupARN, err))
+    } else {
+      log.Printf("deleted target group %q", c.targetGroupARN)
+    }
+  }
+  if c.loadBalancerARN != "" {
+    _, err := c.elbClient.DeleteLoadBalancer(c.ctx, &elasticloadbalancingv2.DeleteLoadBalancerInput{
+      LoadBalancerArn: aws.String(c.loadBalancerARN),
+    })
+    if err != nil {
+      errorMessages = append(errorMessages, fmt.Sprintf("cannot delete load balancer %q: %v", c.loadBalancerName, err))
+    } else {
+      log.Printf("deleted load balancer %q", c.loadBalancerName)
+    }
+  }
+  if c.autoScalingGroupCreationStarted {
+    _, err := c.autoscalingClient.DeleteAutoScalingGroup(c.ctx, &autoscaling.DeleteAutoScalingGroupInput{
+      AutoScalingGroupName: aws.String(c.rc.GetGroupName()),
+      ForceDelete:          aws.Bool(true),
+    })
+    if err != nil {
+      errorMessages = append(errorMessages, fmt.Sprintf("cannot delete the auto scaling group %q: %v", c.rc.GetGroupName(), err))
+    } else {
+      log.Printf("deleted auto scaling group %q", c.rc.GetGroupName())
+    }
+  }
+  for _, errorMessage := range errorMessages {
+    log.Println(errorMessage)
+  }
 }

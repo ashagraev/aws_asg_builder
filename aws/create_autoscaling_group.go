@@ -11,6 +11,7 @@ import (
 )
 
 func (c *Client) CreateAutoScalingGroup(subnetIDs []string) error {
+  c.autoScalingGroupCreationStarted = true
   _, err := c.autoscalingClient.CreateAutoScalingGroup(c.ctx, &autoscaling.CreateAutoScalingGroupInput{
     AutoScalingGroupName:   aws.String(c.rc.GetGroupName()),
     MaxSize:                aws.Int32(2 * c.rc.InstancesCount),

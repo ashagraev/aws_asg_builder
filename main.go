@@ -45,7 +45,11 @@ func initRunConfig() *aws.RunConfig {
   }
 }
 
-// TODO: cleanup on failure
+func FatalError(err error, client *aws.Client) {
+  client.Cleanup()
+  log.Fatalln(err)
+}
+
 func main() {
   rc := initRunConfig()
   if err := rc.ValidateArtifactNames(); err != nil {
@@ -73,19 +77,19 @@ func main() {
   log.Printf("will create a load balancer %q in subnets %s", rc.GetBalancerName(), strings.Join(subnetIDs, ", "))
   log.Printf("will create an auto scaling group %q with %d %s spot instances", rc.GetGroupName(), rc.InstancesCount, instanceData.InstanceType)
   if err := client.CreateAMI(); err != nil {
-    log.Fatalln(err)
+    FatalError(err, client)
   }
   if err := client.CreateLaunchTemplate(instanceData); err != nil {
-    log.Fatalln(err)
+    FatalError(err, client)
   }
   if err := client.CreateTargetGroup(instanceData); err != nil {
-    log.Fatalln(err)
+    FatalError(err, client)
   }
   if err := client.CreateLoadBalancer(subnetIDs); err != nil {
-    log.Fatalln(err)
+    FatalError(err, client)
   }
   if err := client.CreateAutoScalingGroup(subnetIDs); err != nil {
-    log.Fatalln(err)
+    FatalError(err, client)
   }
   client.ReportCreatedArtifacts()
 }

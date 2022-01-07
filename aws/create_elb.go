@@ -134,7 +134,9 @@ func (c *Client) CreateLoadBalancer(subnetIDs []string) error {
       if err != nil {
         return fmt.Errorf("cannot crate listener for the load balancer %q: %v", balancerName, err)
       }
+      c.loadBalancerName = *describeLoadBalancersRes.LoadBalancers[0].LoadBalancerName
       c.loadBalancerDNSName = *describeLoadBalancersRes.LoadBalancers[0].DNSName
+      c.loadBalancerARN = *describeLoadBalancersRes.LoadBalancers[0].LoadBalancerArn
       return nil
     }
     time.Sleep(c.rc.UpdateTick)
