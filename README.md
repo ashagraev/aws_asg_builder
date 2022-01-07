@@ -25,7 +25,7 @@ automatically:
 - register a target group;
 - create a load balancer with a listener that forwards traffic to this target group;
 - create an Auto Scaling group with both EC2 and ELB health checks;
-- handle all the errors that might happen along the way.
+- handle all the errors that might happen along the way; in case of failure, all the created artifacts are deleted.
 
 The tool uses the default AWS credentials config. Run `aws configure` or set up the environment variables
 `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_REGION` before running the tool.
