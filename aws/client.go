@@ -6,9 +6,16 @@ import (
   "github.com/aws/aws-sdk-go-v2/config"
   "github.com/aws/aws-sdk-go-v2/service/autoscaling"
   "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+  "regexp"
+  "strings"
 
   "github.com/aws/aws-sdk-go-v2/service/ec2"
   "time"
+)
+
+var (
+  targetGroupNameRegExp = regexp.MustCompile("^[a-zA-Z0-9-]+$")
+  balancerNameRegExp = regexp.MustCompile("^[a-zA-Z-]+$")
 )
 
 type RunConfig struct {
@@ -20,6 +27,52 @@ type RunConfig struct {
   HealthCheckGracePeriod time.Duration
   UpdateTimeout          time.Duration
   UpdateTick             time.Duration
+}
+
+func (c *RunConfig) GetGroupName() string {
+  return c.GroupName
+}
+
+func (c *RunConfig) GetLaunchTemplateName() string {
+  return c.GroupName
+}
+
+func (c *RunConfig) GetTargetGroupName() string {
+  return strings.ReplaceAll(c.GroupName, "_", "-")
+}
+
+func (c *RunConfig) GetBalancerName() string {
+  return strings.ReplaceAll(c.GroupName, "_", "-")
+}
+
+func (c *RunConfig) GetAMIName() string {
+  return c.GroupName + " v1"
+}
+
+func validateELBName(name string, title string) error {
+  if len(name) > 32 {
+    return fmt.Errorf("%s name will be %q, it shouldn't contain more than 32 symbols, but contains %d", title, name, len(name))
+  }
+  if !targetGroupNameRegExp.MatchString(name) {
+    return fmt.Errorf("%s name will be %q, it must contain only alphanumeric characters or hyphens", title, name)
+  }
+  if strings.HasPrefix(name, "-") || strings.HasSuffix(name, "-") {
+    return fmt.Errorf("%s name will be %q, it must not begin or end with a hyphen", title, name)
+  }
+  if strings.HasPrefix(name, "internal") {
+    return fmt.Errorf("%s name will be %q, it must not begin with \"internal-\"", title, name)
+  }
+  return nil
+}
+
+func (c *RunConfig) ValidateArtifactNames() error {
+  if err := validateELBName(c.GetBalancerName(), "load balancer"); err != nil {
+    return err
+  }
+  if err := validateELBName(c.GetTargetGroupName(), "target group"); err != nil {
+    return err
+  }
+  return nil
 }
 
 type Client struct {

@@ -47,6 +47,9 @@ func initRunConfig() *aws.RunConfig {
 // TODO: cleanup on failure
 func main() {
   rc := initRunConfig()
+  if err := rc.ValidateArtifactNames(); err != nil {
+    log.Fatalln(err)
+  }
   client, err := aws.NewClient(context.Background(), rc)
   if err != nil {
     log.Fatalln(err)
