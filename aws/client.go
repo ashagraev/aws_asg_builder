@@ -6,6 +6,7 @@ import (
   "github.com/aws/aws-sdk-go-v2/config"
   "github.com/aws/aws-sdk-go-v2/service/autoscaling"
   "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+  "log"
   "regexp"
   "strings"
 
@@ -47,6 +48,14 @@ func (c *RunConfig) GetBalancerName() string {
 
 func (c *RunConfig) GetAMIName() string {
   return c.GroupName + " v1"
+}
+
+func (c *RunConfig) ReportArtifacts() {
+  log.Printf("will create an AMI %q from the instance %s", c.GetAMIName(), c.InstanceID)
+  log.Printf("will create a launch template %q", c.GetLaunchTemplateName())
+  log.Printf("will create a target group %q", c.GetTargetGroupName())
+  log.Printf("will create a load balancer %q", c.GetBalancerName())
+  log.Printf("will create an auto scaling group %q", c.GetGroupName())
 }
 
 func validateELBName(name string, title string) error {

@@ -50,6 +50,7 @@ func main() {
   if err := rc.ValidateArtifactNames(); err != nil {
     log.Fatalln(err)
   }
+  rc.ReportArtifacts()
   client, err := aws.NewClient(context.Background(), rc)
   if err != nil {
     log.Fatalln(err)
