@@ -84,7 +84,7 @@ func main() {
   if err != nil {
     log.Fatalln(err)
   }
-  loadBalancer, err := client.CreateLoadBalancer(targetGroupARN, subnetIDs)
+  loadBalancerDNSName, err := client.CreateLoadBalancer(targetGroupARN, subnetIDs)
   if err != nil {
     log.Fatalln(err)
   }
@@ -96,5 +96,5 @@ func main() {
   log.Printf("Target group link: %s", client.GetTargetGroupLink(targetGroupARN))
   log.Printf("Balancer link: %s", client.GetLoadBalancerLink())
   log.Printf("Auto Scalingr group link: %s", client.GetAutoScalingGroupLink())
-  log.Printf("check out the health status: http://%s:%d%s", *loadBalancer.DNSName, rc.DaemonPort, rc.HealthPath)
+  log.Printf("check out the health status: http://%s:%d%s", loadBalancerDNSName, rc.DaemonPort, rc.HealthPath)
 }
