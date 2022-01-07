@@ -6,7 +6,6 @@ import (
   "github.com/aws/aws-sdk-go-v2/config"
   "github.com/aws/aws-sdk-go-v2/service/autoscaling"
   "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
-  "log"
   "regexp"
   "strings"
 
@@ -16,7 +15,7 @@ import (
 
 var (
   targetGroupNameRegExp = regexp.MustCompile("^[a-zA-Z0-9-]+$")
-  balancerNameRegExp = regexp.MustCompile("^[a-zA-Z-]+$")
+  balancerNameRegExp    = regexp.MustCompile("^[a-zA-Z-]+$")
 )
 
 type RunConfig struct {
@@ -48,14 +47,6 @@ func (c *RunConfig) GetBalancerName() string {
 
 func (c *RunConfig) GetAMIName() string {
   return c.GroupName + " v1"
-}
-
-func (c *RunConfig) ReportArtifacts() {
-  log.Printf("will create an AMI %q from the instance %s", c.GetAMIName(), c.InstanceID)
-  log.Printf("will create a launch template %q", c.GetLaunchTemplateName())
-  log.Printf("will create a target group %q", c.GetTargetGroupName())
-  log.Printf("will create a load balancer %q", c.GetBalancerName())
-  log.Printf("will create an auto scaling group %q", c.GetGroupName())
 }
 
 func validateELBName(name string, title string) error {
@@ -90,6 +81,7 @@ type Client struct {
   elbClient         *elasticloadbalancingv2.Client
   rc                *RunConfig
   ctx               context.Context
+  region            string
 }
 
 func NewClient(ctx context.Context, rc *RunConfig) (*Client, error) {
@@ -110,7 +102,28 @@ func NewClient(ctx context.Context, rc *RunConfig) (*Client, error) {
       Credentials: awsConfig.Credentials,
       Region:      awsConfig.Region,
     }),
-    rc:  rc,
-    ctx: ctx,
+    rc:     rc,
+    ctx:    ctx,
+    region: awsConfig.Region,
   }, nil
+}
+
+func (c *Client) GetAMILink(amiID string) string {
+  return fmt.Sprintf("https://console.aws.amazon.com/ec2/v2/home?region=%s#ImageDetails:imageId=%s", c.region, amiID)
+}
+
+func (c *Client) GetLaunchTemplateLink(launchTemplateID string) string {
+  return fmt.Sprintf("https://console.aws.amazon.com/ec2/v2/home?region=%s#LaunchTemplateDetails:launchTemplateId=%s", c.region, launchTemplateID)
+}
+
+func (c *Client) GetTargetGroupLink(targetGroupArn string) string {
+  return fmt.Sprintf("https://console.aws.amazon.com/ec2/v2/home?region=%s#TargetGroup:targetGroupArn=%s", c.region, targetGroupArn)
+}
+
+func (c *Client) GetLoadBalancerLink() string {
+  return fmt.Sprintf("https://console.aws.amazon.com/ec2/v2/home?region=%s#LoadBalancers:search=%s", c.region, c.rc.GetBalancerName())
+}
+
+func (c *Client) GetAutoScalingGroupLink() string {
+  return fmt.Sprintf("https://console.aws.amazon.com/ec2autoscaling/home?region=%s#/details/%s", c.region, c.rc.GetGroupName())
 }

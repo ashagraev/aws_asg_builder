@@ -5,27 +5,13 @@ import (
   "github.com/aws/aws-sdk-go-v2/aws"
   "github.com/aws/aws-sdk-go-v2/service/autoscaling"
   "github.com/aws/aws-sdk-go-v2/service/autoscaling/types"
-  ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
   "log"
   "strings"
   "time"
 )
 
-func (c *Client) CreateAutoScalingGroup(launchTemplateID string, instanceData *ec2types.Instance) error {
-  targetGroupARN, err := c.CreateTargetGroup(instanceData)
-  if err != nil {
-    return fmt.Errorf("cannot create a target group: %v", err)
-  }
-  subnetIDs, err := c.GetSubnets()
-  if err != nil {
-    return fmt.Errorf("cannot get the list of subnet ids: %v", err)
-  }
-  log.Printf("load balancer subnets: %s", strings.Join(subnetIDs, ", "))
-  loadBalancer, err := c.CreateLoadBalancer(targetGroupARN, subnetIDs)
-  if err != nil {
-    return fmt.Errorf("cannot create a balancer: %v", err)
-  }
-  _, err = c.autoscalingClient.CreateAutoScalingGroup(c.ctx, &autoscaling.CreateAutoScalingGroupInput{
+func (c *Client) CreateAutoScalingGroup(launchTemplateID string, targetGroupARN string, subnetIDs []string) error {
+  _, err := c.autoscalingClient.CreateAutoScalingGroup(c.ctx, &autoscaling.CreateAutoScalingGroupInput{
     AutoScalingGroupName:   aws.String(c.rc.GetGroupName()),
     MaxSize:                aws.Int32(2 * c.rc.InstancesCount),
     MinSize:                aws.Int32(c.rc.InstancesCount),
@@ -65,7 +51,6 @@ func (c *Client) CreateAutoScalingGroup(launchTemplateID string, instanceData *e
     log.Printf("group %q: %d instances in total, %d instances are in service and healthy (%d needed)", c.rc.GroupName, len(res.AutoScalingGroups[0].Instances), numHealthy, c.rc.InstancesCount)
     if numHealthy >= c.rc.InstancesCount {
       log.Printf("successfully created an auto scaling group %q", c.rc.GroupName)
-      log.Printf("check out the health status: http://%s:%d%s", *loadBalancer.DNSName, c.rc.DaemonPort, c.rc.HealthPath)
       _, err := c.autoscalingClient.EnableMetricsCollection(c.ctx, &autoscaling.EnableMetricsCollectionInput{
         AutoScalingGroupName: aws.String(c.rc.GroupName),
         Granularity:          aws.String("1Minute"),

@@ -5,6 +5,7 @@ import (
   "flag"
   "log"
   "main/aws"
+  "strings"
   "time"
 )
 
@@ -50,7 +51,6 @@ func main() {
   if err := rc.ValidateArtifactNames(); err != nil {
     log.Fatalln(err)
   }
-  rc.ReportArtifacts()
   client, err := aws.NewClient(context.Background(), rc)
   if err != nil {
     log.Fatalln(err)
@@ -59,6 +59,11 @@ func main() {
   if err != nil {
     log.Fatalln(err)
   }
+  log.Printf("will create an AMI %q from the instance %s", rc.GetAMIName(), rc.InstanceID)
+  log.Printf("will create a launch template %q", rc.GetLaunchTemplateName())
+  log.Printf("will create a target group %q", rc.GetTargetGroupName())
+  log.Printf("will create a load balancer %q", rc.GetBalancerName())
+  log.Printf("will create an auto scaling group %q with %d %s spot instances", rc.GetGroupName(), rc.InstancesCount, instanceData.InstanceType)
   amiID, err := client.CreateAMI()
   if err != nil {
     log.Fatalln(err)
@@ -67,7 +72,26 @@ func main() {
   if err != nil {
     log.Fatalln(err)
   }
-  if err := client.CreateAutoScalingGroup(launchTemplateID, instanceData); err != nil {
+  targetGroupARN, err := client.CreateTargetGroup(instanceData)
+  if err != nil {
     log.Fatalln(err)
   }
+  subnetIDs, err := client.GetSubnets()
+  if err != nil {
+    log.Fatalln(err)
+  }
+  log.Printf("load balancer subnets: %s", strings.Join(subnetIDs, ", "))
+  loadBalancer, err := client.CreateLoadBalancer(targetGroupARN, subnetIDs)
+  if err != nil {
+    log.Fatalln(err)
+  }
+  if err := client.CreateAutoScalingGroup(launchTemplateID, targetGroupARN, subnetIDs); err != nil {
+    log.Fatalln(err)
+  }
+  log.Printf("AMI link: %s", client.GetAMILink(amiID))
+  log.Printf("Launch template link: %s", client.GetLaunchTemplateLink(launchTemplateID))
+  log.Printf("Target group link: %s", client.GetTargetGroupLink(targetGroupARN))
+  log.Printf("Balancer link: %s", client.GetLoadBalancerLink())
+  log.Printf("Auto Scalingr group link: %s", client.GetAutoScalingGroupLink())
+  log.Printf("check out the health status: http://%s:%d%s", *loadBalancer.DNSName, rc.DaemonPort, rc.HealthPath)
 }
