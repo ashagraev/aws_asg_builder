@@ -70,43 +70,52 @@ The following command will create an Auto Scaling group `my_service_group` from 
 The output looks like that then:
 
 ```
-2022/01/06 21:07:18 ami-02017ea24a4c875fe ("my_service_group v1"): pending
-2022/01/06 21:08:18 ami-02017ea24a4c875fe ("my_service_group v1"): pending
-2022/01/06 21:09:18 ami-02017ea24a4c875fe ("my_service_group v1"): pending
-2022/01/06 21:10:19 ami-02017ea24a4c875fe ("my_service_group v1"): available
-2022/01/06 21:10:19 created launch template "my_service_group"
-2022/01/06 21:10:24 created target group "my-service-group" (arn:aws:elasticloadbalancing:us-east-1:046898261394:targetgroup/my-service-group/2a26fc5d5b6b6218)
-2022/01/06 21:10:24 load balancer subnets: subnet-7e353733, subnet-bb0d39b5, subnet-6bafd034, subnet-6b7c0e0d, subnet-66ca4b57, subnet-dd8ef7fc
-2022/01/06 21:10:26 load balancer "my-service-group": provisioning
-2022/01/06 21:11:26 load balancer "my-service-group": provisioning
-2022/01/06 21:12:26 load balancer "my-service-group": provisioning
-2022/01/06 21:13:26 load balancer "my-service-group": active
-2022/01/06 21:13:30 group "my_service_group": 0 instances in total, 0 instances are in service and healthy (10 needed)
-2022/01/06 21:14:31 group "my_service_group", instance "i-054bf6155609ec8bc": InService, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-056ad0b0c87b9d83d": InService, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-082efd3e596a48fc0": Pending, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-08f77391f5024636d": Pending, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-0965bc3ae36c7f581": InService, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-0a3c909db0d21ccfd": InService, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-0ac330d72e4093cb4": Pending, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-0dcf5d90436696e75": Pending, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-0df393c4f980f582a": Pending, Healthy
-2022/01/06 21:14:31 group "my_service_group", instance "i-0fec2014c2fc1706a": InService, Healthy
-2022/01/06 21:14:31 group "my_service_group": 10 instances in total, 5 instances are in service and healthy (10 needed)
-2022/01/06 21:15:32 group "my_service_group", instance "i-054bf6155609ec8bc": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-056ad0b0c87b9d83d": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-082efd3e596a48fc0": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-08f77391f5024636d": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-0965bc3ae36c7f581": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-0a3c909db0d21ccfd": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-0ac330d72e4093cb4": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-0dcf5d90436696e75": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-0df393c4f980f582a": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group", instance "i-0fec2014c2fc1706a": InService, Healthy
-2022/01/06 21:15:32 group "my_service_group": 10 instances in total, 10 instances are in service and healthy (10 needed)
-2022/01/06 21:15:32 successfully created an auto scaling group "my_service_group"
-2022/01/06 21:15:32 check out the health status: http://my-service-group-1253581427.us-east-1.elb.amazonaws.com:8080/health
-2022/01/06 21:15:33 enabled metrics collection for the group "my_service_group"
+2022/01/07 10:42:01 will create an AMI "my_service_group v1" from the instance i-0699803d818227e16
+2022/01/07 10:42:01 will create a launch template "my_service_group"
+2022/01/07 10:42:01 will create a target group "my-service-group"
+2022/01/07 10:42:01 will create a load balancer "my-service-group"
+2022/01/07 10:42:01 will create an auto scaling group "my_service_group" with 10 t2.small spot instances
+2022/01/07 10:42:01 ami-00c78efe33a162b36 ("my_service_group v1"): pending
+2022/01/07 10:43:02 ami-00c78efe33a162b36 ("my_service_group v1"): pending
+2022/01/07 10:44:02 ami-00c78efe33a162b36 ("my_service_group v1"): pending
+2022/01/07 10:45:02 ami-00c78efe33a162b36 ("my_service_group v1"): available
+2022/01/07 10:45:02 created launch template "my_service_group"
+2022/01/07 10:45:03 created target group "my-service-group" (arn:aws:elasticloadbalancing:us-east-1:046898261394:targetgroup/my-service-group/9ff35ebad2a86a0d)
+2022/01/07 10:45:04 load balancer subnets: subnet-7e353733, subnet-bb0d39b5, subnet-6bafd034, subnet-6b7c0e0d, subnet-66ca4b57, subnet-dd8ef7fc
+2022/01/07 10:45:05 load balancer "my-service-group": provisioning
+2022/01/07 10:46:05 load balancer "my-service-group": provisioning
+2022/01/07 10:47:05 load balancer "my-service-group": active
+2022/01/07 10:47:09 group "my_service_group": 0 instances in total, 0 instances are in service and healthy (10 needed)
+2022/01/07 10:48:09 group "my_service_group", instance "i-0071e23d5f723ca78": InService, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-0250bc8b1ef1173d2": InService, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-02c51ec311822e072": InService, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-0415988f40e7cb87e": InService, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-0470f10de375fc978": Pending, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-047cd43b77947afce": InService, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-087d57ef33e6c26b0": Pending, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-08d426cade3c3bf8e": Pending, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-09a68825c258faf9f": InService, Healthy
+2022/01/07 10:48:09 group "my_service_group", instance "i-0bb9b9061e7970004": InService, Healthy
+2022/01/07 10:48:09 group "my_service_group": 10 instances in total, 7 instances are in service and healthy (10 needed)
+2022/01/07 10:49:10 group "my_service_group", instance "i-0071e23d5f723ca78": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-0250bc8b1ef1173d2": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-02c51ec311822e072": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-0415988f40e7cb87e": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-0470f10de375fc978": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-047cd43b77947afce": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-087d57ef33e6c26b0": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-08d426cade3c3bf8e": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-09a68825c258faf9f": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group", instance "i-0bb9b9061e7970004": InService, Healthy
+2022/01/07 10:49:10 group "my_service_group": 10 instances in total, 10 instances are in service and healthy (10 needed)
+2022/01/07 10:49:10 successfully created an auto scaling group "my_service_group"
+2022/01/07 10:49:10 enabled metrics collection for the group "my_service_group"
+2022/01/07 10:49:10 AMI link: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#ImageDetails:imageId=ami-00c78efe33a162b36
+2022/01/07 10:49:10 Launch template link: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LaunchTemplateDetails:launchTemplateId=lt-0ce496d3c72c69e9d
+2022/01/07 10:49:10 Target group link: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#TargetGroup:targetGroupArn=arn:aws:elasticloadbalancing:us-east-1:046898261394:targetgroup/my-service-group/9ff35ebad2a86a0d
+2022/01/07 10:49:10 Balancer link: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1#LoadBalancers:search=my-service-group
+2022/01/07 10:49:10 Auto Scalingr group link: https://console.aws.amazon.com/ec2autoscaling/home?region=us-east-1#/details/my_service_group
+2022/01/07 10:49:10 check out the health status: http://my-service-group-1643996769.us-east-1.elb.amazonaws.com:8080/health
 ```
 
 ## Program Arguments
