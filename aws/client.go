@@ -52,6 +52,9 @@ func (c *RunConfig) GetAMIName() string {
 }
 
 func validateELBName(name string, title string) error {
+  if len(name) < 3 {
+    return fmt.Errorf("%s name will be %q, it shouldn't contain less than 3 symbols, but contains %d", title, name, len(name))
+  }
   if len(name) > 32 {
     return fmt.Errorf("%s name will be %q, it shouldn't contain more than 32 symbols, but contains %d", title, name, len(name))
   }
