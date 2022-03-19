@@ -30,6 +30,7 @@ func extractPlacement(instanceData *types.Instance) (*types.LaunchTemplatePlacem
   if err := json.Unmarshal(placementJson, &placementRequest); err != nil {
     return nil, fmt.Errorf("cannot unmarshal placement of the instance with id %s: %v", *instanceData.InstanceId, err)
   }
+  placementRequest.AvailabilityZone = nil
   return placementRequest, nil
 }
 
