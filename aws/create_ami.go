@@ -25,7 +25,6 @@ func (c *Client) getImageState(imageID string) (types.ImageState, error) {
 }
 
 func (c *Client) CreateAMI() error {
-  amiName := c.rc.GroupName + " v1"
   createImageOutput, err := c.ec2Client.CreateImage(c.ctx, &ec2.CreateImageInput{
     InstanceId: aws.String(c.rc.InstanceID),
     Name:       aws.String(c.rc.GetAMIName()),
@@ -42,15 +41,15 @@ func (c *Client) CreateAMI() error {
       time.Sleep(c.rc.UpdateTick)
       continue
     }
-    log.Printf("%s (%q): %s", *createImageOutput.ImageId, amiName, imageState)
+    log.Printf("%s (%q): %s", *createImageOutput.ImageId, c.rc.GetAMIName(), imageState)
     if imageState != types.ImageStatePending {
       if imageState == types.ImageStateAvailable {
         c.amiID = *createImageOutput.ImageId
         return nil
       }
-      return fmt.Errorf("created image %s (%q) is in invalid state %s", *createImageOutput.ImageId, amiName, imageState)
+      return fmt.Errorf("created image %s (%q) is in invalid state %s", *createImageOutput.ImageId, c.rc.GetAMIName(), imageState)
     }
     time.Sleep(c.rc.UpdateTick)
   }
-  return fmt.Errorf("the image %s (%q) didn't become available in %v", *createImageOutput.ImageId, amiName, c.rc.UpdateTimeout)
+  return fmt.Errorf("the image %s (%q) didn't become available in %v", *createImageOutput.ImageId, c.rc.GetAMIName(), c.rc.UpdateTimeout)
 }
